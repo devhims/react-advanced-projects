@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 
 const table = {
   sports: 21,
@@ -9,7 +9,6 @@ const table = {
 
 const API_ENDPOINT = 'https://opentdb.com/api.php?';
 
-const url = '';
 const tempUrl =
   'https://opentdb.com/api.php?amount=10&category=21&difficulty=easy&type=multiple';
 
@@ -22,6 +21,11 @@ const AppProvider = ({ children }) => {
   const [index, setIndex] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [error, setError] = useState(false);
+  const [quiz, setQuiz] = useState({
+    amount: 10,
+    category: 'sports',
+    difficulty: 'easy',
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -30,10 +34,10 @@ const AppProvider = ({ children }) => {
     setWaiting(false);
 
     const response = await axios(url).catch((error) => console.log(error));
-    console.log(response);
+    // console.log(response);
     if (response) {
       const data = response.data.results;
-      console.log(data);
+      // console.log(data);
       if (data.length > 0) {
         setQuestions(data);
         setLoading(false);
@@ -53,7 +57,8 @@ const AppProvider = ({ children }) => {
     setIndex((oldIndex) => {
       const index = oldIndex + 1;
       if (index > questions.length - 1) {
-        return 0;
+        openModal();
+        return index - 1;
       } else {
         return index;
       }
@@ -68,9 +73,29 @@ const AppProvider = ({ children }) => {
     nextQuestion();
   };
 
-  useEffect(() => {
-    fetchQuestions(tempUrl);
-  }, []);
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setWaiting(true);
+    setCorrect(0);
+    setIndex(0);
+    setIsModalOpen(false);
+  };
+
+  const handleChange = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setQuiz({ ...quiz, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const { amount, category, difficulty } = quiz;
+    const url = `${API_ENDPOINT}amount=${amount}&category=${table[category]}&difficulty=${difficulty}&type=multiple`;
+    fetchQuestions(url);
+  };
 
   return (
     <AppContext.Provider
@@ -84,6 +109,10 @@ const AppProvider = ({ children }) => {
         isModalOpen,
         nextQuestion,
         checkAnswer,
+        closeModal,
+        quiz,
+        handleChange,
+        handleSubmit,
       }}
     >
       {children}

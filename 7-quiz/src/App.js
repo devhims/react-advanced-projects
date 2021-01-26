@@ -24,15 +24,17 @@ function App() {
     return <Loading />;
   }
 
-  console.log(questions);
   const { question, incorrect_answers, correct_answer } = questions[index];
-  const answers = [...incorrect_answers, correct_answer];
+  let answers = [...incorrect_answers];
+  const tempIndex = Math.floor(Math.random() * 4);
+  answers.splice(tempIndex, 0, correct_answer);
+
   return (
     <main>
-      {/* <Modal /> */}
+      <Modal />
       <section className="quiz">
         <p className="correct-answers">
-          correct answers : {correct}/{index}
+          correct answers : {correct}/{index + 1}
         </p>
         <article className="container">
           <h2 dangerouslySetInnerHTML={{ __html: question }} />
